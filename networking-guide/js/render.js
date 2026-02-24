@@ -1,0 +1,599 @@
+function buildTerminal(label, lines) {
+  return `
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+        <span class="terminal-label">${label}</span>
+      </div>
+      <div class="terminal-body">${lines}</div>
+    </div>`;
+}
+
+function buildTable(headers, rows) {
+  const ths = headers.map(h => `<th>${h}</th>`).join('');
+  const trs = rows.map(r => {
+    const tds = r.map(d => `<td>${d}</td>`).join('');
+    return `<tr>${tds}</tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+}
+
+function buildInfoCard(label, value, sub) {
+  return `
+    <div class="info-card">
+      <div class="info-card-label">${label}</div>
+      <div class="info-card-value">${value}</div>
+      <div class="info-card-sub">${sub}</div>
+    </div>`;
+}
+
+const CONTENT = {
+
+  network: `
+    <div class="card">
+      <p class="body-text">Data travels from your machine to a server through a chain of hops. It does not travel as one whole file — it is broken into packets, each routed independently, then reassembled at the destination.</p>
+      <div class="path-flow">
+        <div class="path-node hl">Your Machine</div><div class="path-arrow">→</div>
+        <div class="path-node">Router</div><div class="path-arrow">→</div>
+        <div class="path-node">ISP</div><div class="path-arrow">→</div>
+        <div class="path-node">Internet</div><div class="path-arrow">→</div>
+        <div class="path-node hl">Server</div>
+      </div>
+    </div>`,
+
+  ip: `
+    <div class="card">
+      <div class="grid-3">
+        ${buildInfoCard('AWS VPCs / Kubernetes', '10.x.x.x', '10.0.0.0 – 10.255.255.255')}
+        ${buildInfoCard('Docker Bridge', '172.17.x.x', '172.16.0.0 – 172.31.255.255')}
+        ${buildInfoCard('Local VMs / Home', '192.168.64.3', 'Your actual VM IP')}
+      </div>
+      ${buildInfoCard('Loopback — Never leaves the host', '127.0.0.1', 'localhost — machine communicates with itself')}
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px;">CIDR Notation</div>
+      <div class="cidr-row"><span class="cidr-slash">/8</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:100%">Large enterprise</div></div><span class="cidr-hosts">16,777,214 hosts</span></div>
+      <div class="cidr-row"><span class="cidr-slash">/16</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:85%">Full VPC</div></div><span class="cidr-hosts">65,534 hosts</span></div>
+      <div class="cidr-row"><span class="cidr-slash">/24</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:50%">Standard subnet</div></div><span class="cidr-hosts">254 hosts</span></div>
+      <div class="cidr-row"><span class="cidr-slash">/28</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:20%">Small subnet</div></div><span class="cidr-hosts">14 hosts</span></div>
+      <div class="cidr-row"><span class="cidr-slash">/30</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:8%">P2P</div></div><span class="cidr-hosts">2 hosts</span></div>
+      <div class="cidr-row"><span class="cidr-slash">/32</span><div class="cidr-bar-track"><div class="cidr-bar-fill" style="width:2%">1</div></div><span class="cidr-hosts">1 host</span></div>
+    </div>`,
+
+  mac: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">IP Address</div>
+          <div class="mono-block">Logical — assigned by software<br>Changes with network<br>Used across internet<br>Layer 3</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">MAC Address</div>
+          <div class="mono-block">Physical — burned in hardware<br>Permanent<br>Used within LAN only<br>Layer 2</div>
+        </div>
+      </div>
+      ${buildTerminal('mac-addresses.txt', `
+        <span class="t-out">2: enp0s1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt;</span><br>
+        <span class="t-out">   link/ether </span><span class="t-green">12:89:cc:c6:2c:dd</span><span class="t-out"> brd ff:ff:ff:ff:ff:ff</span><br>
+        <span class="t-out">   inet </span><span class="t-hl">192.168.64.3/24</span><span class="t-out"> brd 192.168.64.255</span>
+      `)}
+      <p class="body-text" style="padding-top:8px;">ARP maps IP addresses to MAC addresses within a local network. When a packet travels between subnets, the MAC changes at each hop while the IP stays the same end to end.</p>
+    </div>`,
+
+  osi: `
+    <div class="card">
+      <p class="body-text">7 layers describe how data travels from application to wire. As a DevOps engineer, layers 3, 4, and 7 are where your work lives.</p>
+      <div class="osi-row devops-layer"><span class="osi-num-badge">7</span><span class="osi-layer-name">Application</span><span class="osi-layer-tools">curl · dig · wget</span><span class="osi-devops-badge">DevOps</span></div>
+      <div class="osi-row"><span class="osi-num-badge">6</span><span class="osi-layer-name">Presentation</span><span class="osi-layer-tools">TLS/SSL · encryption</span></div>
+      <div class="osi-row"><span class="osi-num-badge">5</span><span class="osi-layer-name">Session</span><span class="osi-layer-tools">connection management</span></div>
+      <div class="osi-row devops-layer"><span class="osi-num-badge">4</span><span class="osi-layer-name">Transport</span><span class="osi-layer-tools">ss · nc · telnet</span><span class="osi-devops-badge">DevOps</span></div>
+      <div class="osi-row devops-layer"><span class="osi-num-badge">3</span><span class="osi-layer-name">Network</span><span class="osi-layer-tools">ping · traceroute · ip route</span><span class="osi-devops-badge">DevOps</span></div>
+      <div class="osi-row"><span class="osi-num-badge">2</span><span class="osi-layer-name">Data Link</span><span class="osi-layer-tools">MAC · ARP · Ethernet</span></div>
+      <div class="osi-row"><span class="osi-num-badge">1</span><span class="osi-layer-name">Physical</span><span class="osi-layer-tools">cables · signals · radio</span></div>
+    </div>`,
+
+  tcp: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="compare-block tcp">
+          <h3>TCP</h3>
+          <div class="compare-item">Reliable — guarantees delivery</div>
+          <div class="compare-item">Ordered — sequence maintained</div>
+          <div class="compare-item">Error-checked — retransmits lost data</div>
+          <div class="compare-item">HTTP · HTTPS · SSH · Databases</div>
+        </div>
+        <div class="compare-block udp">
+          <h3>UDP</h3>
+          <div class="compare-item">Fast — no delivery guarantee</div>
+          <div class="compare-item">No ordering or retransmission</div>
+          <div class="compare-item">Lower latency — no handshake</div>
+          <div class="compare-item">DNS · Monitoring · Streaming</div>
+        </div>
+      </div>
+    </div>`,
+
+  ports: `
+    <div class="card">
+      <div class="grid-auto">
+        <div class="port-card"><span class="port-num">22</span><span class="port-name">SSH</span></div>
+        <div class="port-card"><span class="port-num">80</span><span class="port-name">HTTP</span></div>
+        <div class="port-card"><span class="port-num">443</span><span class="port-name">HTTPS</span></div>
+        <div class="port-card"><span class="port-num">3306</span><span class="port-name">MySQL</span></div>
+        <div class="port-card"><span class="port-num">5432</span><span class="port-name">PostgreSQL</span></div>
+        <div class="port-card"><span class="port-num">6379</span><span class="port-name">Redis</span></div>
+        <div class="port-card"><span class="port-num">8080</span><span class="port-name">Alt HTTP</span></div>
+        <div class="port-card"><span class="port-num">6443</span><span class="port-name">K8s API</span></div>
+        <div class="port-card"><span class="port-num">2379</span><span class="port-name">etcd</span></div>
+      </div>
+    </div>`,
+
+  errors: `
+    <div class="card">
+      <div class="error-compare">
+        <div class="error-block refused">
+          <div class="error-type-label">Connection Refused</div>
+          <div class="error-detail">Packet arrived at the server.<br>Nothing is listening on that port.<br><br>→ App crashed or not started<br>→ Wrong port number<br><br>Fix: ss -tuln, restart service</div>
+        </div>
+        <div class="error-block timeout">
+          <div class="error-type-label">Connection Timed Out</div>
+          <div class="error-detail">Packet never reached the server.<br>Dropped somewhere in transit.<br><br>→ Firewall blocking the port<br>→ Security Group misconfigured<br><br>Fix: ufw status, check SG rules</div>
+        </div>
+      </div>
+    </div>`,
+
+  commands1: `
+    <div class="card">
+      ${buildTable(
+        ['Command', 'Output File', 'Purpose'],
+        [
+          ['ip a', 'ip-a-output.txt', 'View interfaces and private IP'],
+          ['ip route', 'ip-route-output.txt', 'View routing table and default gateway'],
+          ['curl ifconfig.me', 'public-ip.txt', 'View public IP address'],
+          ['ping -c 4 8.8.8.8', 'ping-output.txt', 'Test Layer 3 connectivity'],
+          ['traceroute google.com', 'traceroute-output.txt', 'Trace every network hop'],
+          ['ss -tuln', 'ss-tuln-output.txt', 'View all listening ports'],
+          ['curl -v https://google.com', 'curl-v-output.txt', 'Full HTTP and TLS conversation'],
+          ['ip link show', 'mac-addresses.txt', 'View MAC addresses'],
+          ['arp -n', 'arp-table.txt', 'View ARP table']
+        ]
+      )}
+      ${buildTerminal('shady@ubuntu-server — ip a', `
+        <span class="t-out">1: </span><span class="t-hl">lo</span><span class="t-out">: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536</span><br>
+        <span class="t-out">   inet </span><span class="t-green">127.0.0.1/8</span><span class="t-out"> scope host lo</span><br><br>
+        <span class="t-out">2: </span><span class="t-hl">enp0s1</span><span class="t-out">: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500</span><br>
+        <span class="t-out">   link/ether </span><span class="t-yellow">12:89:cc:c6:2c:dd</span><span class="t-out"> brd ff:ff:ff:ff:ff:ff</span><br>
+        <span class="t-out">   inet </span><span class="t-green">192.168.64.3/24</span><span class="t-out"> brd 192.168.64.255 scope global dynamic</span>
+      `)}
+    </div>`,
+
+  cidr: `
+    <div class="card">
+      ${buildTable(
+        ['CIDR', 'Total IPs', 'Usable Hosts', 'Use Case'],
+        [
+          ['/32', '1', '1', 'Single host in a security group rule'],
+          ['/30', '4', '2', 'Point-to-point links'],
+          ['/28', '16', '14', 'Small subnet'],
+          ['/27', '32', '30', 'Small team workload'],
+          ['/24', '256', '254', 'Standard production subnet'],
+          ['/23', '512', '510', 'Larger subnet'],
+          ['/16', '65,536', '65,534', 'Full VPC']
+        ]
+      )}
+      <p class="body-text">Every time the CIDR number increases by 1, available hosts halve. Every time it decreases by 1, hosts double.</p>
+    </div>`,
+
+  reading: `
+    <div class="card">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);margin-bottom:16px;">10.0.1.0/24</div>
+      ${buildTable(
+        ['Detail', 'Value'],
+        [
+          ['Network Address', '10.0.1.0'],
+          ['First Usable Host', '10.0.1.1'],
+          ['Last Usable Host', '10.0.1.254'],
+          ['Broadcast Address', '10.0.1.255'],
+          ['Usable Hosts', '254']
+        ]
+      )}
+      ${buildTerminal('ipcalc-outputs.txt', `
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.1.0/24</span><br>
+        <span class="t-out">Network:   </span><span class="t-green">10.0.1.0/24</span><br>
+        <span class="t-out">HostMin:   </span><span class="t-green">10.0.1.1</span><br>
+        <span class="t-out">HostMax:   </span><span class="t-green">10.0.1.254</span><br>
+        <span class="t-out">Broadcast: 10.0.1.255</span><br>
+        <span class="t-out">Hosts/Net: </span><span class="t-hl">254</span>
+      `)}
+    </div>`,
+
+  design: `
+    <div class="card">
+      <p class="body-text" style="font-family:'JetBrains Mono',monospace;">VPC CIDR: 10.0.0.0/16 — 3-Tier Web Application across 2 Availability Zones</p>
+      ${buildTable(
+        ['Subnet', 'CIDR', 'Type', 'Purpose'],
+        [
+          ['Public A', '10.0.1.0/24', 'Public', 'Load Balancer, NAT Gateway'],
+          ['Public B', '10.0.2.0/24', 'Public', 'Load Balancer — AZ redundancy'],
+          ['Private A', '10.0.3.0/24', 'Private', 'Application servers'],
+          ['Private B', '10.0.4.0/24', 'Private', 'Application servers — AZ redundancy'],
+          ['Database A', '10.0.5.0/24', 'Private', 'Primary database'],
+          ['Database B', '10.0.6.0/24', 'Private', 'Database replica']
+        ]
+      )}
+      <p class="body-text">Two availability zones for every tier — if one AZ goes down, traffic fails over automatically.</p>
+    </div>`,
+
+  publicprivate: `
+    <div class="card">
+      <p class="body-text">The only technical difference between a public and private subnet is a single route table entry.</p>
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">Public Subnet Route Table</div>
+          <div class="mono-block">
+            <span class="hl">10.0.0.0/16</span> → local<br>
+            <span class="hl">0.0.0.0/0</span>  → Internet Gateway
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Private Subnet Route Table</div>
+          <div class="mono-block">
+            <span class="hl">10.0.0.0/16</span> → local<br>
+            <span class="hl">0.0.0.0/0</span>  → NAT Gateway
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+  commands2: `
+    <div class="card">
+      ${buildTerminal('Day 2 — ipcalc practice', `
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo apt install ipcalc -y</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.0.0/16</span><span class="t-out">     → VPC range breakdown</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.1.0/24</span><span class="t-out">     → standard subnet</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.1.0/28</span><span class="t-out">     → small subnet</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.1.0/30</span><span class="t-out">     → point-to-point</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 172.16.0.0/12</span><span class="t-out">    → Docker range</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ipcalc 10.0.1.5/32</span><span class="t-out">     → single host</span>
+      `)}
+    </div>`,
+
+  dnsrecords: `
+    <div class="card">
+      ${buildTable(
+        ['Record', 'Maps', 'DevOps Use Case'],
+        [
+          ['A', 'Domain → IPv4', 'Point myapp.com to server IP'],
+          ['AAAA', 'Domain → IPv6', 'IPv6 equivalent of A record'],
+          ['CNAME', 'Domain → Domain', 'www.myapp.com → myapp.com'],
+          ['MX', 'Domain → Mail server', 'Email routing configuration'],
+          ['TXT', 'Domain → Text', 'SSL verification, SPF, DKIM'],
+          ['NS', 'Domain → Nameservers', 'Who controls this domain DNS'],
+          ['PTR', 'IP → Domain', 'Reverse lookup, email verification'],
+          ['SRV', 'Service location', 'Kubernetes internal services']
+        ]
+      )}
+    </div>`,
+
+  dnsresolution: `
+    <div class="card">
+      <div class="step-flow">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><div class="step-title">Local Cache</div><div class="step-desc">Browser checks its own DNS cache. If found and not expired, uses it immediately.</div></div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><div class="step-title">/etc/hosts</div><div class="step-desc">OS checks local overrides. This file is checked before any DNS query hits the network.</div></div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><div class="step-title">Recursive Resolver</div><div class="step-desc">Asks your ISP resolver or public one like 8.8.8.8. This resolver does the heavy lifting.</div></div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><div class="step-title">Root Nameserver</div><div class="step-desc">Resolver asks root: "who handles .com?" Root returns the TLD nameserver address.</div></div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><div class="step-title">TLD Nameserver</div><div class="step-desc">.com TLD server says: "myapp.com is handled by these nameservers."</div></div></div>
+        <div class="step-item"><div class="step-num">6</div><div class="step-content"><div class="step-title">Authoritative Nameserver</div><div class="step-desc">Returns the actual A record: myapp.com → 54.x.x.x. Result cached for TTL duration.</div></div></div>
+      </div>
+    </div>`,
+
+  dnsttl: `
+    <div class="card">
+      <div class="grid-2">
+        ${buildInfoCard('TTL = Time To Live', 'Cached duration', 'How long a DNS result is cached globally after a record update')}
+        ${buildInfoCard('Before a deployment', 'Lower TTL first', 'Set TTL to 60s a day before changing DNS. Restore after confirming traffic.')}
+      </div>
+      ${buildTerminal('dig-outputs.txt', `
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com</span><br>
+        <span class="t-out">;; ANSWER SECTION:</span><br>
+        <span class="t-out">google.com.  </span><span class="t-yellow">300</span><span class="t-out">  IN  A  142.250.200.46</span><br>
+        <span class="t-out">              ↑ TTL in seconds</span>
+      `)}
+    </div>`,
+
+  k8sdns: `
+    <div class="card">
+      <p class="body-text">Every Kubernetes service automatically gets an internal DNS name. Pods use these to find each other — no hardcoded IPs needed.</p>
+      ${buildTerminal('Kubernetes DNS format', `
+        <span class="t-out">&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</span><br><br>
+        <span class="t-green">myapp</span><span class="t-out">.</span><span class="t-yellow">default</span><span class="t-out">.svc.cluster.local</span><br>
+        <span class="t-green">database</span><span class="t-out">.</span><span class="t-yellow">production</span><span class="t-out">.svc.cluster.local</span><br>
+        <span class="t-green">redis</span><span class="t-out">.</span><span class="t-yellow">staging</span><span class="t-out">.svc.cluster.local</span>
+      `)}
+    </div>`,
+
+  commands3: `
+    <div class="card">
+      ${buildTerminal('DNS investigation commands', `
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com</span><span class="t-out">                    → full resolution with TTL</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com +short</span><span class="t-out">             → IP address only</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com MX</span><span class="t-out">                 → mail records</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com NS</span><span class="t-out">                 → nameservers</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">dig google.com TXT</span><span class="t-out">                → text records</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">dig -x 8.8.8.8</span><span class="t-out">                   → reverse lookup</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">nslookup google.com 1.1.1.1</span><span class="t-out">       → query specific resolver</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">cat /etc/hosts</span><span class="t-out">                    → local DNS overrides</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">cat /etc/resolv.conf</span><span class="t-out">              → machine DNS server</span>
+      `)}
+    </div>`,
+
+  routing: `
+    <div class="card">
+      <p class="body-text">When a packet leaves a server, the routing table is consulted to determine the next hop. The most specific route wins. The default route is the catch-all.</p>
+      ${buildTerminal('ip route show', `
+        <span class="t-prompt">$ </span><span class="t-cmd">ip route show</span><br>
+        <span class="t-green">default</span><span class="t-out"> via 10.0.1.1 dev eth0       ← anything unknown → default gateway</span><br>
+        <span class="t-out">10.0.1.0/24 dev eth0 proto kernel  ← this subnet → talk directly</span><br>
+        <span class="t-out">172.17.0.0/16 dev docker0          ← Docker containers → bridge</span>
+      `)}
+    </div>`,
+
+  firewall: `
+    <div class="card">
+      ${buildTerminal('ufw-rules.sh', `
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw enable</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw allow 22</span><span class="t-out">                              → SSH</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw allow 443</span><span class="t-out">                             → HTTPS</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw deny 3306</span><span class="t-out">                             → block MySQL externally</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw allow from 10.0.1.5 to any port 5432</span><span class="t-out"> → specific IP only</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw status verbose</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo iptables -L -n -v</span>
+      `)}
+    </div>`,
+
+  sgnacl: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">Security Group</div>
+          <div class="mono-block">Applied to: individual instance<br>Stateful: yes<br>Default: deny all inbound<br>Rules: all evaluated together</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Network ACL</div>
+          <div class="mono-block">Applied to: entire subnet<br>Stateful: no — both directions needed<br>Default: allow all<br>Rules: evaluated in numbered order</div>
+        </div>
+      </div>
+      <div class="alert-block danger">
+        Interview question: Port 80 is open in the Security Group but HTTP traffic is not arriving.<br><br>
+        Answer: Check the Network ACL — it may be blocking port 80 at the subnet level. Also verify the NACL allows return traffic on ephemeral ports 1024–65535 since NACLs are stateless.
+      </div>
+    </div>`,
+
+  commands4: `
+    <div class="card">
+      ${buildTerminal('Day 4 — routing and firewall commands', `
+        <span class="t-prompt">$ </span><span class="t-cmd">ip route show</span><span class="t-out">                          → view routing table</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ip route add 192.168.2.0/24 via 10.0.1.1</span><span class="t-out">  → add static route</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw enable</span><span class="t-out">                        → enable firewall</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo ufw status verbose</span><span class="t-out">                → view all rules</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo iptables -L -n -v</span><span class="t-out">                 → raw firewall rules</span>
+      `)}
+    </div>`,
+
+  lb: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">Layer 4 — NLB</div>
+          <div class="info-card-sub" style="margin-top:8px;">Routes based on IP and port. Fast, low overhead, no content inspection. Used for high throughput workloads.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Layer 7 — ALB</div>
+          <div class="info-card-sub" style="margin-top:8px;">Routes based on URL path, headers, and cookies. Used for web apps and microservices.</div>
+        </div>
+      </div>
+      ${buildTerminal('ALB path-based routing', `
+        <span class="t-out">myapp.com</span><span class="t-green">/api</span><span class="t-out">     → API server target group</span><br>
+        <span class="t-out">myapp.com</span><span class="t-green">/static</span><span class="t-out">  → Static content servers</span><br>
+        <span class="t-out">myapp.com</span><span class="t-green">/admin</span><span class="t-out">   → Admin server target group</span>
+      `)}
+      <p class="body-text" style="padding-top:8px;">Health checks run continuously. A 502 error means the load balancer cannot reach a healthy instance — the app has crashed or is not listening.</p>
+    </div>`,
+
+  nat: `
+    <div class="card">
+      <p class="body-text">Private subnet resources have no public IP. NAT Gateway lets them initiate outbound connections to the internet without being reachable inbound.</p>
+      ${buildTerminal('NAT Gateway traffic flow', `
+        <span class="t-out">App (10.0.2.5) → </span><span class="t-green">NAT Gateway (52.x.x.x)</span><span class="t-out"> → Internet</span><br>
+        <span class="t-out">Internet → NAT Gateway → </span><span class="t-red">BLOCKED</span><span class="t-out"> (no inbound)</span>
+      `)}
+      <div class="grid-2" style="margin-top:16px;">
+        ${buildInfoCard('Internet Gateway', 'Bidirectional', 'Used by public subnets for inbound and outbound traffic')}
+        ${buildInfoCard('NAT Gateway', 'Outbound only', 'Used by private subnets to reach internet without exposure')}
+      </div>
+    </div>`,
+
+  vpn: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">Site-to-Site VPN</div>
+          <div class="info-card-sub" style="margin-top:8px;">Connects on-premises data centre to AWS VPC. Office engineers access AWS private resources as if on the same LAN.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Client VPN</div>
+          <div class="info-card-sub" style="margin-top:8px;">Connects individual engineer laptop to company network remotely. Required to access private AWS resources from home.</div>
+        </div>
+      </div>
+    </div>`,
+
+  http: `
+    <div class="card">
+      ${buildTable(
+        ['Method', 'Action', 'DevOps Context'],
+        [
+          ['GET', 'Retrieve data', 'Health check endpoints, fetching config'],
+          ['POST', 'Create resource', 'API calls, webhooks, deployment triggers'],
+          ['PUT', 'Replace resource', 'Infrastructure updates via API'],
+          ['PATCH', 'Partial update', 'Configuration changes'],
+          ['DELETE', 'Remove resource', 'Cleanup automation']
+        ]
+      )}
+    </div>`,
+
+  status: `
+    <div class="card">
+      ${buildTable(
+        ['Code', 'Meaning', 'Root Cause'],
+        [
+          ['200', 'OK', 'Everything worked'],
+          ['301 / 302', 'Redirect', 'Permanent or temporary redirect'],
+          ['401', 'Unauthorized', 'Missing or invalid credentials'],
+          ['403', 'Forbidden', 'Authenticated but not permitted'],
+          ['404', 'Not Found', 'Wrong endpoint or deleted resource'],
+          ['429', 'Too Many Requests', 'Rate limiting triggered'],
+          ['500', 'Internal Server Error', 'Bug in the application'],
+          ['502', 'Bad Gateway', 'Load balancer cannot reach the app'],
+          ['503', 'Service Unavailable', 'App is down or overwhelmed'],
+          ['504', 'Gateway Timeout', 'App is too slow to respond']
+        ]
+      )}
+    </div>`,
+
+  tls: `
+    <div class="card">
+      <div class="step-flow">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><div class="step-title">Client Hello</div><div class="step-desc">Client sends supported TLS version and cipher suites.</div></div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><div class="step-title">Server Hello + Certificate</div><div class="step-desc">Server responds with chosen cipher and its SSL certificate.</div></div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><div class="step-title">Certificate Verification</div><div class="step-desc">Client verifies certificate against trusted Certificate Authorities.</div></div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><div class="step-title">Key Exchange</div><div class="step-desc">Client and server negotiate a shared session encryption key.</div></div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><div class="step-title">Encrypted Communication</div><div class="step-desc">All further communication is encrypted with the session key.</div></div></div>
+      </div>
+      ${buildTerminal('curl-v-output.txt — TLS handshake', `
+        <span class="t-out">* TLSv1.3 (OUT), TLS handshake, Client hello</span><br>
+        <span class="t-out">* TLSv1.3 (IN),  TLS handshake, Server hello</span><br>
+        <span class="t-out">* TLSv1.3 (IN),  TLS handshake, Certificate</span><br>
+        <span class="t-out">* TLSv1.3 (OUT), TLS handshake, Finished</span><br>
+        <span class="t-green">* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384</span>
+      `)}
+    </div>`,
+
+  toolkit: `
+    <div class="card">
+      ${buildTerminal('Complete diagnostic toolkit', `
+        <span class="t-out">── CONNECTIVITY ─────────────────────────────────────</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ping 8.8.8.8</span><span class="t-out">                      → basic IP reachability</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">traceroute google.com</span><span class="t-out">             → trace every hop</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">mtr google.com</span><span class="t-out">                    → live traceroute with stats</span><br><br>
+        <span class="t-out">── PORTS ────────────────────────────────────────────</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">ss -tuln</span><span class="t-out">                           → all listening ports</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">nc -zv 10.0.1.5 3306</span><span class="t-out">              → test port reachability</span><br><br>
+        <span class="t-out">── HTTP ─────────────────────────────────────────────</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">curl -v https://myapp.com</span><span class="t-out">          → full HTTP conversation</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">curl -I https://myapp.com</span><span class="t-out">          → response headers only</span><br><br>
+        <span class="t-out">── TLS ──────────────────────────────────────────────</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">openssl s_client -connect myapp.com:443</span><br><br>
+        <span class="t-out">── CAPTURE ──────────────────────────────────────────</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo tcpdump -i eth0 port 80</span><span class="t-out">       → capture HTTP traffic</span><br>
+        <span class="t-prompt">$ </span><span class="t-cmd">sudo tcpdump -i eth0 host 10.0.1.5</span><span class="t-out">    → specific host traffic</span>
+      `)}
+    </div>`,
+
+  vpcarch: `
+    <div class="card">
+      ${buildTerminal('AWS Architecture — eu-west-2 (London)', `
+        <span class="t-out">Region: eu-west-2 (London)</span><br>
+        <span class="t-out">└── </span><span class="t-green">VPC: 10.0.0.0/16</span><br>
+        <span class="t-out">    ├── Availability Zone A (eu-west-2a)</span><br>
+        <span class="t-out">    │   ├── </span><span class="t-yellow">Public Subnet: 10.0.1.0/24</span><br>
+        <span class="t-out">    │   │   ├── Application Load Balancer</span><br>
+        <span class="t-out">    │   │   └── NAT Gateway + Elastic IP</span><br>
+        <span class="t-out">    │   └── Private Subnet: 10.0.2.0/24</span><br>
+        <span class="t-out">    │       └── EC2 App Servers</span><br>
+        <span class="t-out">    └── Availability Zone B (eu-west-2b)</span><br>
+        <span class="t-out">        ├── </span><span class="t-yellow">Public Subnet: 10.0.3.0/24</span><br>
+        <span class="t-out">        └── Private Subnet: 10.0.4.0/24</span><br>
+        <span class="t-out">            └── RDS Database</span>
+      `)}
+    </div>`,
+
+  vpccomponents: `
+    <div class="card">
+      ${buildTable(
+        ['Component', 'Purpose', 'Linux Equivalent'],
+        [
+          ['Internet Gateway', 'Connects VPC to public internet', 'Home router/modem'],
+          ['NAT Gateway', 'Private subnet outbound internet', 'NAT on home router'],
+          ['Route Table', 'Packet routing decisions', 'ip route'],
+          ['Security Group', 'Instance-level stateful firewall', 'iptables per instance'],
+          ['Network ACL', 'Subnet-level stateless firewall', 'iptables per subnet'],
+          ['VPC Peering', 'Private connection between VPCs', 'Direct LAN connection'],
+          ['Elastic IP', 'Static public IP address', 'Reserved public IP'],
+          ['Bastion Host', 'Jump server for SSH to private instances', 'SSH proxy']
+        ]
+      )}
+    </div>`,
+
+  vpcroutes: `
+    <div class="card">
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-label">Public Subnet Route Table</div>
+          <div class="mono-block">
+            <span class="hl">10.0.0.0/16</span> → local<br>
+            <span class="hl">0.0.0.0/0</span>  → igw-xxxxx
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-label">Private Subnet Route Table</div>
+          <div class="mono-block">
+            <span class="hl">10.0.0.0/16</span> → local<br>
+            <span class="hl">0.0.0.0/0</span>  → nat-xxxxx
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+  vpcsg: `
+    <div class="card">
+      <div class="sg-block">
+        <div class="sg-title">Load Balancer Security Group</div>
+        <div class="sg-rule"><span class="sg-port">443</span><span class="sg-dir">Inbound</span><span class="sg-source">0.0.0.0/0</span><span class="sg-note">HTTPS from anywhere</span></div>
+        <div class="sg-rule"><span class="sg-port">80</span><span class="sg-dir">Inbound</span><span class="sg-source">0.0.0.0/0</span><span class="sg-note">HTTP redirect to HTTPS</span></div>
+        <div class="sg-rule"><span class="sg-port">8080</span><span class="sg-dir">Outbound</span><span class="sg-source">App-SG</span><span class="sg-note">Forward to app servers</span></div>
+      </div>
+      <div class="sg-block">
+        <div class="sg-title">App Server Security Group</div>
+        <div class="sg-rule"><span class="sg-port">8080</span><span class="sg-dir">Inbound</span><span class="sg-source">LB-SG only</span><span class="sg-note">Not from internet</span></div>
+        <div class="sg-rule"><span class="sg-port">5432</span><span class="sg-dir">Outbound</span><span class="sg-source">DB-SG</span><span class="sg-note">Talk to database</span></div>
+        <div class="sg-rule"><span class="sg-port">443</span><span class="sg-dir">Outbound</span><span class="sg-source">0.0.0.0/0</span><span class="sg-note">Updates via NAT</span></div>
+      </div>
+      <div class="sg-block">
+        <div class="sg-title">Database Security Group</div>
+        <div class="sg-rule"><span class="sg-port">5432</span><span class="sg-dir">Inbound</span><span class="sg-source">App-SG only</span><span class="sg-note">No direct internet access</span></div>
+      </div>
+    </div>`,
+
+  terraform: `
+    <div class="card">
+      ${buildTerminal('main.tf — VPC Infrastructure', `
+        <span class="t-out">resource "aws_vpc" "main" {</span><br>
+        <span class="t-out">  cidr_block = </span><span class="t-green">"10.0.0.0/16"</span><br>
+        <span class="t-out">  tags = { Name = </span><span class="t-green">"devops-study-vpc"</span><span class="t-out"> }</span><br>
+        <span class="t-out">}</span><br><br>
+        <span class="t-out">resource "aws_subnet" "public_a" {</span><br>
+        <span class="t-out">  vpc_id            = aws_vpc.main.id</span><br>
+        <span class="t-out">  cidr_block        = </span><span class="t-green">"10.0.1.0/24"</span><br>
+        <span class="t-out">  availability_zone = </span><span class="t-green">"eu-west-2a"</span><br>
+        <span class="t-out">  map_public_ip_on_launch = true</span><br>
+        <span class="t-out">  tags = { Name = </span><span class="t-green">"public-subnet-a"</span><span class="t-out"> }</span><br>
+        <span class="t-out">}</span><br><br>
+        <span class="t-out">resource "aws_internet_gateway" "igw" {</span><br>
+        <span class="t-out">  vpc_id = aws_vpc.main.id</span><br>
+        <span class="t-out">}</span><br><br>
+        <span class="t-out">resource "aws_nat_gateway" "nat" {</span><br>
+        <span class="t-out">  allocation_id = aws_eip.nat.id</span><br>
+        <span class="t-out">  subnet_id     = aws_subnet.public_a.id</span><br>
+        <span class="t-out">}</span>
+      `)}
+    </div>`
+};
