@@ -50,7 +50,7 @@ DevOps and Cloud Engineer
 | Day | Status |
 |-----|--------|
 | Day 1 — IP Addresses, OSI Model, TCP/UDP | Completed |
-| Day 2 — Subnetting and CIDR Notation | Pending |
+| Day 2 — Subnetting and CIDR Notation | Completed |
 | Day 3 — DNS | Pending |
 | Day 4 — Routing and Firewalls | Pending |
 | Day 5 — Load Balancers, NAT and VPN | Pending |
