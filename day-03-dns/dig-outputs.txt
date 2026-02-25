@@ -1,0 +1,49 @@
+========================================
+ DNS INVESTIGATION - DevOps Reference
+ Date: Wed Feb 25 22:03:29 UTC 2026
+ Server: ubuntu-server
+========================================
+
+--- A Record: dig google.com ---
+google.com.     50    IN  A   142.251.140.110
+Query time: 43 msec | SERVER: 127.0.0.53#53
+
+--- A Record Short: dig google.com +short ---
+142.251.140.110
+
+--- MX Record: dig google.com MX ---
+google.com.     377   IN  MX  10 smtp.google.com.
+Query time: 142 msec
+
+--- NS Records: dig google.com NS ---
+google.com.     4502  IN  NS  ns1.google.com.
+google.com.     4502  IN  NS  ns2.google.com.
+google.com.     4502  IN  NS  ns3.google.com.
+google.com.     4502  IN  NS  ns4.google.com.
+Query time: 46 msec
+
+--- TXT Records: dig google.com TXT ---
+google.com.     377   IN  TXT "v=spf1 include:_spf.google.com ~all"
+google.com.     377   IN  TXT "google-site-verification=..."
+google.com.     377   IN  TXT "docusign=..."
+(12 TXT records total — SPF, site verification, DKIM)
+Query time: 198 msec
+
+--- Reverse DNS: dig -x 8.8.8.8 ---
+8.8.8.8.in-addr.arpa.  4502  IN  PTR  dns.google.
+Query time: 34 msec
+
+--- nslookup google.com ---
+Server:   127.0.0.53
+Name:     google.com
+Address:  142.251.140.110 (IPv4)
+Address:  2a00:1450:4002:400::200e (IPv6)
+
+--- /etc/resolv.conf ---
+nameserver 127.0.0.53
+options edns0 trust-ad
+# systemd-resolved local stub resolver
+
+--- /etc/hosts ---
+127.0.0.1 localhost
+127.0.1.1 ubuntu-server
